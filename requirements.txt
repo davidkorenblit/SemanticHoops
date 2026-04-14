@@ -1,0 +1,35 @@
+# =============================================================================
+# Semantic Sport-Tech — Requirements
+# Pin minor versions; allow patch updates (>=x.y, <x.(y+1)) for security fixes.
+# =============================================================================
+
+# --- Web Framework ---
+fastapi>=0.111.0,<0.112.0
+uvicorn[standard]>=0.29.0,<0.30.0
+pydantic>=2.7.0,<3.0.0
+pydantic-settings>=2.2.0,<3.0.0
+
+# --- Vector DB ---
+qdrant-client>=1.9.0,<2.0.0
+
+# --- CLIP & Deep Learning ---
+torch>=2.3.0,<2.4.0
+torchvision>=0.18.0,<0.19.0
+openai-clip>=1.0.1            # OpenAI's original CLIP (open_clip is the alternative)
+open-clip-torch>=2.24.0,<3.0.0
+
+# --- Computer Vision & Video ---
+opencv-python-headless>=4.9.0,<5.0.0
+yt-dlp>=2024.4.9
+
+# --- Data & Utilities ---
+numpy>=1.26.0,<2.0.0
+Pillow>=10.3.0,<11.0.0
+tqdm>=4.66.0,<5.0.0
+python-dotenv>=1.0.0,<2.0.0
+loguru>=0.7.0,<1.0.0
+
+# --- Testing ---
+pytest>=8.2.0,<9.0.0
+pytest-asyncio>=0.23.0,<1.0.0
+httpx>=0.27.0,<1.0.0          # ASGI test client for FastAPI

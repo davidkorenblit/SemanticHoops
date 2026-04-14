@@ -1,0 +1,103 @@
+# =============================================================================
+# Semantic Sport-Tech — .gitignore
+# =============================================================================
+
+# --- Environment & Secrets ---
+.env
+.env.*
+!.env.example
+*.secret
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# --- Virtual Environments ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+*.ipynb
+
+# =============================================================================
+# VIDEO FILES — NEVER COMMIT (can be 1,000+ hours / TBs of data)
+# =============================================================================
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+*.flv
+*.wmv
+*.m4v
+*.ts
+*.mts
+*.m2ts
+
+# =============================================================================
+# MODEL WEIGHTS — Too large for Git; use DVC or HuggingFace Hub
+# =============================================================================
+*.pt
+*.pth
+*.bin
+*.ckpt
+*.safetensors
+*.onnx
+*.tflite
+*.pb
+models/weights/
+models/checkpoints/
+
+# =============================================================================
+# DATA DIRECTORIES — Processed artifacts and raw downloads
+# =============================================================================
+data/raw/*
+data/processed/*
+# Keep the directory stubs tracked via .gitkeep
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# =============================================================================
+# VECTOR DB STORAGE VOLUMES — Qdrant persists data to disk
+# =============================================================================
+qdrant_storage/
+.qdrant/
+vector_store/
+
+# --- Docker ---
+.docker/
+
+# --- OS Artifacts ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- IDE ---
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# --- Logs ---
+logs/
+*.log

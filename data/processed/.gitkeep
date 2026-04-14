@@ -1,0 +1,3 @@
+# data/processed/.gitkeep
+# This file intentionally keeps the data/processed/ directory tracked by Git.
+# Extracted frames and processed artifacts are excluded via .gitignore.

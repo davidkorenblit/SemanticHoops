@@ -1,0 +1,12 @@
+# Normalise line endings in Git — always LF in the repo, CRLF on Windows checkout
+* text=auto eol=lf
+
+# Force binary treatment for media/model files
+*.mp4 binary
+*.avi binary
+*.mov binary
+*.pt  binary
+*.pth binary
+*.bin binary
+*.onnx binary
+*.safetensors binary

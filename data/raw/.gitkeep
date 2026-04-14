@@ -1,0 +1,3 @@
+# data/raw/.gitkeep
+# This file intentionally keeps the data/raw/ directory tracked by Git.
+# The actual video files in this directory are excluded via .gitignore.
