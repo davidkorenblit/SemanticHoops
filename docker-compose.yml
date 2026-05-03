@@ -1,11 +1,6 @@
 # =============================================================================
-# Semantic Sport-Tech — Docker Compose
-# Services:
-#   • qdrant  — Vector DB (persists to a named volume, NOT tracked by Git)
-#   • app     — FastAPI inference server (GPU-enabled)
+# Semantic Sport-Tech — Docker Compose (CPU Version - Fixed)
 # =============================================================================
-
-version: "3.9"
 
 services:
 
@@ -17,21 +12,16 @@ services:
     container_name: sport_qdrant
     restart: unless-stopped
     ports:
-      - "6333:6333"   # REST API
-      - "6334:6334"   # gRPC API
+      - "6333:6333"
+      - "6334:6334"
     volumes:
-      # Named volume — data survives container restarts but is `.gitignore`d
       - qdrant_storage:/qdrant/storage
     environment:
       QDRANT__SERVICE__GRPC_PORT: 6334
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    # הסרנו את ה-healthcheck כי הוא נוטה להיכשל בגלל חוסר ב-curl בתוך ה-image
 
   # ---------------------------------------------------------------------------
-  # Sport-Tech FastAPI Application
+  # Sport-Tech Application
   # ---------------------------------------------------------------------------
   app:
     build:
@@ -41,30 +31,18 @@ services:
     container_name: sport_api
     restart: unless-stopped
     depends_on:
-      qdrant:
-        condition: service_healthy
+      - qdrant # תלות רגילה ללא בדיקת בריאות חוסמת
     ports:
       - "8000:8000"
     env_file:
       - .env
     environment:
-      QDRANT_HOST: qdrant          # Override localhost → service name for Docker DNS
+      - QDRANT_HOST=qdrant
     volumes:
-      # Mount data directories — keeps large files out of the image layer
       - ./data/raw:/app/data/raw
       - ./data/processed:/app/data/processed
-    # GPU passthrough (comment out if running CPU-only)
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+      - ./src:/app/src
 
-# =============================================================================
-# Named Volumes — data survives `docker compose down`, excluded from Git
-# =============================================================================
 volumes:
   qdrant_storage:
     driver: local

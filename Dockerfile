@@ -1,7 +1,5 @@
 # =============================================================================
 # Semantic Sport-Tech — Dockerfile
-# Multi-stage build: keeps the final image lean by separating build deps.
-# Base: CUDA 12.1 + cuDNN8 for GPU-accelerated CLIP inference.
 # =============================================================================
 
 # ── Stage 1: Builder ─────────────────────────────────────────────────────────
@@ -12,7 +10,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# System dependencies (ffmpeg for OpenCV video decode, git for pip VCS deps)
+# System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.11 \
     python3.11-venv \
@@ -25,7 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /build
 
-# Install Python deps into an isolated venv so we can copy it cleanly
+# Install Python deps into an isolated venv
 RUN python3.11 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
@@ -52,15 +50,15 @@ COPY --from=builder /opt/venv /opt/venv
 
 WORKDIR /app
 
-# Copy application source (data/ volumes are mounted at runtime, not baked in)
+# Copy application source
 COPY src/ ./src/
 COPY main.py .
 
-# Non-root user for security hardening
-RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
-USER appuser
+# Permission Fix: Run as root for local development to ensure write access to volumes
+# RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+# USER appuser
 
 EXPOSE 8000
 
-# Entrypoint: uvicorn serves the FastAPI app
-CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+# Entrypoint: uvicorn serves the FastAPI app with 1 worker for GPU stability
+CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
