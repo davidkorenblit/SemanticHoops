@@ -1,21 +1,3 @@
-
-"""src/ingestion/extract_frames.py
-=================================================
-Ingestion pipeline – frame extraction from raw video files.
-
-* Reads all video files from ``data/raw/`` (currently MP4 files).
-* For each video extracts **exactly one frame per second** (1 FPS) using OpenCV.
-* Saves frames as JPEG images under ``data/processed/<video_id>/``.
-* Frame filenames embed the video identifier and the timestamp in seconds:
-  ``<video_id>_frame_<SSSS>.jpg`` where ``SSSS`` is zero‑padded to 4 digits.
-* Uses ``loguru`` to log processing latency for each video (start → finish).
-* Provides a clear public ``extract_frames`` function and a convenient
-  ``__main__`` entry‑point for manual execution.
-
-The implementation is deliberately lightweight and Docker‑friendly – no heavy
-memory allocations, minimal external dependencies, and explicit error handling.
-"""
-
 import os
 import cv2
 import time
@@ -23,33 +5,34 @@ from pathlib import Path
 from loguru import logger
 
 # ---------------------------------------------------------------------------
-# Configuration constants – adjust if the project layout changes
+# Configuration & Logging Setup
 # ---------------------------------------------------------------------------
 RAW_VIDEO_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
 PROCESSED_FRAME_DIR = Path(__file__).resolve().parents[2] / "data" / "processed"
+LOG_DIR = Path(__file__).resolve().parents[2] / "data" / "logs"
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov"}
 
-
 def _ensure_directory(path: Path) -> None:
-    """Create *path* if it does not exist.
-
-    Parameters
-    ----------
-    path: Path
-        Destination directory.
-    """
+    """Create *path* if it does not exist."""
     try:
         path.mkdir(parents=True, exist_ok=True)
     except Exception as exc:
-        logger.error(f"Failed to create directory {path}: {exc}")
+        print(f"Critical: Failed to create directory {path}: {exc}")
         raise
 
+# וידוא קיום תיקיית לוגים לפני הגדרת ה-Logger
+_ensure_directory(LOG_DIR)
 
-def _list_video_files(directory: Path):
-    """Return a sorted list of video file paths inside *directory*.
+# הגדרת Loguru: גם הדפסה למסך וגם שמירה לקובץ JSON סדרתי
+logger.add(
+    LOG_DIR / "ingestion.json",
+    serialize=True,     # הופך כל שורת לוג לאובייקט JSON
+    rotation="10 MB",   # מונע מהקובץ לגדול מדי
+    level="INFO"
+)
 
-    Only files with extensions listed in ``VIDEO_EXTENSIONS`` are returned.
-    """
+def _list_video_files(directory: Path) -> list[Path]:
+    """Return a sorted list of video file paths inside *directory*."""
     if not directory.is_dir():
         logger.error(f"Raw video directory does not exist: {directory}")
         return []
@@ -58,14 +41,12 @@ def _list_video_files(directory: Path):
         key=lambda p: p.name,
     )
 
-
 def _extract_one_fps(video_path: Path, output_dir: Path) -> None:
-    """Extract 1 FPS frames from *video_path* into *output_dir*.
-
-    The function creates *output_dir* if necessary and writes JPEG files named
-    ``<video_id>_frame_<SSSS>.jpg`` where ``SSSS`` is the timestamp in seconds.
     """
-    video_id = video_path.stem  # filename without extension
+    Extract 1 FPS frames sequentially.
+    Optimized for CPU by avoiding random-access seeking (O(N^2)).
+    """
+    video_id = video_path.stem
     _ensure_directory(output_dir)
 
     cap = cv2.VideoCapture(str(video_path))
@@ -74,53 +55,63 @@ def _extract_one_fps(video_path: Path, output_dir: Path) -> None:
         return
 
     fps = cap.get(cv2.CAP_PROP_FPS)
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    duration_sec = int(total_frames / fps) if fps > 0 else 0
-    logger.debug(
-        f"Processing {video_path.name}: fps={fps:.2f}, total_frames={total_frames}, duration≈{duration_sec}s"
-    )
+    if fps <= 0:
+        logger.error(f"Invalid FPS ({fps}) for {video_path.name}")
+        cap.release()
+        return
 
-    # Iterate over each whole second of the video
-    for sec in range(duration_sec + 1):  # include last second if exact
-        # Seek to the desired timestamp (milliseconds)
-        cap.set(cv2.CAP_PROP_POS_MSEC, sec * 1000)
+    # אינדקס למעקב אחרי השניות שאנחנו רוצים לחלץ
+    next_target_sec = 0
+    frame_count = 0
+
+    while True:
         ret, frame = cap.read()
         if not ret:
-            logger.warning(f"Failed to read frame at {sec}s from {video_path.name}")
-            continue
-        # Construct filename with zero‑padded seconds (4 digits → up to 9999 s)
-        frame_filename = f"{video_id}_frame_{sec:04d}.jpg"
-        frame_path = output_dir / frame_filename
-        # Encode as JPEG; ``cv2.imwrite`` returns a bool indicating success
-        if not cv2.imwrite(str(frame_path), frame):
-            logger.error(f"Failed to write frame image: {frame_path}")
-        else:
-            logger.debug(f"Saved frame: {frame_path.name}")
+            break
+
+        # חישוב זמן נוכחי על בסיס אינדקס פריימים (יותר אמין מ-POS_MSEC בחלק מהפורמטים)
+        current_sec = int(frame_count / fps)
+
+        if current_sec >= next_target_sec:
+            frame_filename = f"{video_id}_frame_{next_target_sec:04d}.jpg"
+            frame_path = output_dir / frame_filename
+            
+            if cv2.imwrite(str(frame_path), frame):
+                logger.debug(f"Saved: {frame_filename}")
+            else:
+                logger.error(f"Write failed: {frame_filename}")
+            
+            next_target_sec += 1
+
+        frame_count += 1
 
     cap.release()
 
-
 def extract_frames() -> None:
-    """Public entry point – iterates over all raw videos and extracts frames.
-
-    Logs the latency (seconds) taken for each video using ``loguru``.
-    """
+    """Main pipeline execution."""
     video_files = _list_video_files(RAW_VIDEO_DIR)
     if not video_files:
-        logger.info("No video files found to process.")
+        logger.info("No video files found.")
         return
 
     for video_path in video_files:
         video_id = video_path.stem
         out_dir = PROCESSED_FRAME_DIR / video_id
-        start_time = time.time()
-        logger.info(f"Starting extraction for {video_path.name} into {out_dir}")
-        _extract_one_fps(video_path, out_dir)
-        elapsed = time.time() - start_time
-        logger.info(f"Finished {video_path.name} – latency: {elapsed:.2f}s")
 
+        # Idempotency Check
+        if out_dir.is_dir() and any(out_dir.iterdir()):
+            logger.info(f"Skipping {video_path.name}: Frames already exist.")
+            continue
+
+        start_time = time.perf_counter()
+        logger.info(f"Processing: {video_path.name}")
+        
+        try:
+            _extract_one_fps(video_path, out_dir)
+            elapsed = time.perf_counter() - start_time
+            logger.info(f"Finished {video_path.name} in {elapsed:.2f}s")
+        except Exception as e:
+            logger.exception(f"Failed to process {video_path.name}: {e}")
 
 if __name__ == "__main__":
-    # When executed as a script, run the extraction pipeline.
     extract_frames()
-

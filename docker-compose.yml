@@ -42,6 +42,8 @@ services:
       - ./data/raw:/app/data/raw
       - ./data/processed:/app/data/processed
       - ./src:/app/src
+      - .:/app
+      - ./data/logs:/app/data/logs
 
 volumes:
   qdrant_storage:

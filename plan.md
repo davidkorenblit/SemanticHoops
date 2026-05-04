@@ -1,43 +1,26 @@
-# Project Implementation Plan - Semantic Sport-Tech
+# Skills Development - Semantic Sport-Tech Project
 
-## Phase 1: Data & Infrastructure (Week 1)
-* **Tasks:**
-    * Setup Docker environment (Python + GPU support + Vector DB).
-    * Source selection: DeepSportRadar vs. YouTube (`yt-dlp`).
-    * Initial Engineering Justification doc.
-* **Deliverable:** Working containerized environment.
+## 1. Computer Vision & Video Understanding
+* **Action Spotting:** Understanding tactical movements beyond simple event detection.
+* **Feature Extraction:** Leveraging CLIP, VideoMAE, or SOTA backbones for multimodal embeddings.
+* **Intelligent Sampling:** Implementing logic to reduce data volume while preserving semantic information.
 
-## Phase 2: Smart Sampling & Pipeline (Week 2)
-* **Tasks:**
-    * Build video-to-frame ingestion engine.
-    * Implement Smart Sampling logic (Adaptive FPS).
-    * Measure processing latency per video hour.
-* **Deliverable:** Efficient data pipeline.
+## 2. Machine Learning Engineering (Production-Ready)
+* **Modular Architecture:** Designing systems that are decoupled and extensible.
+* **Containerization:** Full Docker integration for reproducible environments.
+* **Agentic Workflow:** Proficiency in using AI-driven development tools (like Cursor) while maintaining deep logic understanding.
+* **Documentation:** Technical specs, API docs, and engineering justifications.
 
-## Phase 3: Embedding Layer (Week 3)
-* **Tasks:**
-    * Integrate CLIP / Multimodal embeddings.
-    * Create modular "Model Wrapper" for easy swapping.
-    * Validation of embedding quality on sample clips.
-* **Deliverable:** Feature extraction module.
+## 3. Data Engineering & Search
+* **Vector Databases:** Expert-level knowledge of Qdrant, Milvus, or Pinecone (Indexing, HNSW, filtering).
+* **Data Pipelines:** Building robust ingestion flows from raw video to searchable vectors.
+* **ETL for Video:** Efficient use of `yt-dlp`, OpenCV, and FFmpeg.
 
-## Phase 4: Retrieval Engine & Vector DB (Week 4)
-* **Tasks:**
-    * Deploy and configure Vector DB (e.g., Qdrant).
-    * Index initial dataset.
-    * Implement Cosine Similarity search.
-* **Deliverable:** Functional search backend.
+## 4. Backend & Systems Design
+* **API Development:** High-performance endpoints using FastAPI.
+* **Performance Optimization:** Latency profiling (ms) and memory footprint management.
+* **Scalability:** Designing for 1,000+ hours of video content.
 
-## Phase 5: API & Performance Optimization (Week 5)
-* **Tasks:**
-    * Develop FastAPI backend for the search engine.
-    * Run evaluation metrics (mAP, Recall@K).
-    * Optimization pass on inference speed.
-* **Deliverable:** Production-grade API + Evaluation Report.
-
-## Phase 6: UI & Final Polish (Week 6)
-* **Tasks:**
-    * Build Streamlit frontend for visual demo.
-    * Complete README.md and engineering documentation.
-    * Prepare for "Hard Questions" mock interview.
-* **Deliverable:** Portfolio-ready MVP.
+## 5. Evaluation & Metrics
+* **Information Retrieval:** Measuring mAP (Mean Average Precision) and Recall@K.
+* **System Benchmarking:** Latency vs. Accuracy trade-offs.
