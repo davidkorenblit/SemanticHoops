@@ -49,14 +49,14 @@ class CLIPWrapper:
         
         return image_features.cpu().numpy().tolist()[0]
 
-    def get_batch_images_embeddings(self, image_paths: List[Path], batch_size: int = 32) -> List[List[float]]:
+    def get_batch_images_embeddings(self, image_paths: List[Path], batch_size: int = 32) -> List[dict]:
         """Extract embeddings for a list of images in batches.
 
         Handles corrupted files gracefully, logs progress and latency,
         and clears CUDA cache after each batch to keep memory usage low.
         """
         import time
-        embeddings: List[List[float]] = []
+        embeddings: List[dict] = []
         total = len(image_paths)
         if total == 0:
             return embeddings
@@ -80,7 +80,26 @@ class CLIPWrapper:
                 batch_features = self.model.encode_image(batch_tensor)
                 batch_features /= batch_features.norm(dim=-1, keepdim=True)
             batch_embeddings = batch_features.cpu().numpy().tolist()
-            embeddings.extend(batch_embeddings)
+            
+            for path, emb in zip(valid_paths, batch_embeddings):
+                filename = path.stem
+                if "_frame_" in filename:
+                    video_id, frame_str = filename.rsplit("_frame_", 1)
+                    try:
+                        timestamp = int(frame_str)
+                    except ValueError:
+                        timestamp = 0
+                else:
+                    video_id = filename
+                    timestamp = 0
+                    
+                embeddings.append({
+                    "embedding": emb,
+                    "file_path": str(path),
+                    "video_id": video_id,
+                    "timestamp": timestamp
+                })
+                
             batch_elapsed = time.perf_counter() - batch_start_time
             logger.info(
                 f"Processed batch {batch_start // batch_size + 1}/{(total + batch_size - 1) // batch_size} "
