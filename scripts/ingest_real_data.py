@@ -5,7 +5,7 @@ from qdrant_client.models import PointStruct
 from src.models.embeddings import CLIPWrapper
 
 COLLECTION_NAME = "nba_frames"
-DATA_DIR = Path("data/processed/vid1")
+DATA_DIR = Path("data/processed")
 
 def main():
     client = QdrantClient(
@@ -15,19 +15,19 @@ def main():
 
     model = CLIPWrapper()
 
-    image_paths = sorted(DATA_DIR.glob("*.jpg"))
-    if not image_paths:
-        print(f"No .jpg files found in {DATA_DIR}")
+    all_image_paths = sorted(DATA_DIR.rglob("*.jpg"))
+    if not all_image_paths:
+        print(f"No .jpg files found under {DATA_DIR}")
         return
 
-    print(f"Found {len(image_paths)} frames. Generating embeddings...")
-    results = model.get_batch_images_embeddings(image_paths, batch_size=32)
+    print(f"Found {len(all_image_paths)} frames across all videos. Generating embeddings...")
+    results = model.get_batch_images_embeddings(all_image_paths, batch_size=32)
 
     points = []
-    for i, item in enumerate(results):
+    for global_id, item in enumerate(results, start=1):
         points.append(
             PointStruct(
-                id=i + 1,
+                id=global_id,
                 vector=item["embedding"],
                 payload={
                     "video_id": item["video_id"],
