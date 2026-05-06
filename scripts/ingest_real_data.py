@@ -37,7 +37,13 @@ def main():
             )
         )
 
-    client.upsert(collection_name=COLLECTION_NAME, points=points)
+    batch_size = 200
+    for i in range(0, len(points), batch_size):
+        client.upsert(
+            collection_name=COLLECTION_NAME,
+            points=points[i:i + batch_size]
+        )
+
     print(f"Upserted {len(points)} real frames to '{COLLECTION_NAME}'.")
 
 if __name__ == "__main__":
