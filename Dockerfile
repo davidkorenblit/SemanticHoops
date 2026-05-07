@@ -31,9 +31,14 @@ WORKDIR /build
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Install Python requirements
+# Install heavy libraries first as dedicated cached layers
+RUN pip install --upgrade pip
+RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+RUN pip install git+https://github.com/openai/CLIP.git
+
+# Install remaining Python requirements
 COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
 
 # ── Stage 2: Runtime ─────────────────────────────────────────────────────────
@@ -41,7 +46,8 @@ FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04 AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PATH="/opt/venv/bin:$PATH"
+    PATH="/opt/venv/bin:$PATH" \
+    PYTHONPATH="/app"
 
 # Install only necessary runtime system libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \

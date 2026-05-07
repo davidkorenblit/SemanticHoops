@@ -1,12 +1,4 @@
-# =============================================================================
-# Semantic Sport-Tech — Docker Compose (CPU Version - Fixed)
-# =============================================================================
-
 services:
-
-  # ---------------------------------------------------------------------------
-  # Qdrant Vector Database
-  # ---------------------------------------------------------------------------
   qdrant:
     image: qdrant/qdrant:v1.9.2
     container_name: sport_qdrant
@@ -18,11 +10,7 @@ services:
       - qdrant_storage:/qdrant/storage
     environment:
       QDRANT__SERVICE__GRPC_PORT: 6334
-    # הסרנו את ה-healthcheck כי הוא נוטה להיכשל בגלל חוסר ב-curl בתוך ה-image
 
-  # ---------------------------------------------------------------------------
-  # Sport-Tech Application
-  # ---------------------------------------------------------------------------
   app:
     build:
       context: .
@@ -31,7 +19,7 @@ services:
     container_name: sport_api
     restart: unless-stopped
     depends_on:
-      - qdrant # תלות רגילה ללא בדיקת בריאות חוסמת
+      - qdrant
     ports:
       - "8000:8000"
     env_file:
@@ -39,11 +27,7 @@ services:
     environment:
       - QDRANT_HOST=qdrant
     volumes:
-      - ./data/raw:/app/data/raw
-      - ./data/processed:/app/data/processed
-      - ./src:/app/src
-      - .:/app
-      - ./data/logs:/app/data/logs
+      - .:/app  # מיפוי אחד שכולל הכל (src, scripts, data, logs)
 
 volumes:
   qdrant_storage:

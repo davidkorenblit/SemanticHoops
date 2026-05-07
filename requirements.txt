@@ -10,13 +10,10 @@ pydantic>=2.7.0,<3.0.0
 pydantic-settings>=2.2.0,<3.0.0
 
 # --- Vector DB ---
-qdrant-client>=1.9.0,<2.0.0
+qdrant-client==1.9.2
 
 # --- CLIP & Deep Learning ---
-torch>=2.3.0,<2.4.0
-torchvision>=0.18.0,<0.19.0
-openai-clip>=1.0.1            # OpenAI's original CLIP (open_clip is the alternative)
-open-clip-torch>=2.24.0,<3.0.0
+# torch, torchvision, and openai/CLIP are installed as dedicated Dockerfile layers for optimal caching.
 
 # --- Computer Vision & Video ---
 opencv-python-headless>=4.9.0,<5.0.0

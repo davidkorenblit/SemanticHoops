@@ -15,10 +15,14 @@ def main():
     client = QdrantClient(
         host=os.getenv("QDRANT_HOST", "qdrant"),
         port=int(os.getenv("QDRANT_PORT", 6333)),
+        check_compatibility=False
     )
-    
+
     model = CLIPWrapper()
     query_vector = model.get_text_embedding(args.query)
+
+    if hasattr(query_vector, "tolist"):
+        query_vector = query_vector.tolist()
 
     search_result = client.search(
         collection_name="nba_frames",
@@ -34,9 +38,9 @@ def main():
         video_id = payload.get("video_id")
         timestamp = payload.get("timestamp")
         image_path = payload.get("image_path")
-        
+
         print(f"Score: {score:.4f} | Video ID: {video_id} | Timestamp: {timestamp} | Path: {image_path}")
-        
+
         results_data.append({
             "score": score,
             "payload": payload
@@ -44,13 +48,13 @@ def main():
 
     log_dir = Path("data/logs")
     log_dir.mkdir(parents=True, exist_ok=True)
-    
+
     output = {
         "query": args.query,
         "search_timestamp": datetime.now(timezone.utc).isoformat(),
         "top_matches": results_data
     }
-    
+
     with open(log_dir / "search_results.json", "w") as f:
         json.dump(output, f, indent=2)
 
