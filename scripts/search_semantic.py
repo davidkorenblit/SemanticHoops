@@ -14,8 +14,7 @@ def main():
 
     client = QdrantClient(
         host=os.getenv("QDRANT_HOST", "qdrant"),
-        port=int(os.getenv("QDRANT_PORT", 6333)),
-        check_compatibility=False
+        port=int(os.getenv("QDRANT_PORT", 6333))
     )
 
     model = CLIPWrapper()

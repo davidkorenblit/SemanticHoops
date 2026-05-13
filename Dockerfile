@@ -1,7 +1,5 @@
 # =============================================================================
-# Semantic Sport-Tech — Dockerfile
-# Multi-stage build for a lean production-ready image.
-# Using Python 3.10 (Ubuntu 22.04 default) for maximum stability.
+# Semantic Sport-Tech — Dockerfile (Fixed Syntax)
 # =============================================================================
 
 # ── Stage 1: Builder ─────────────────────────────────────────────────────────
@@ -12,7 +10,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# System dependencies: Added python3-dev and build-essential for C-extensions in pip
+# System dependencies: Added ca-certificates for SSL and git for CLIP
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-venv \
@@ -23,18 +21,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
     git \
-    && rm -rf /var/lib/apt/lists/*
+    ca-certificates && \
+    update-ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
-# Create virtual environment using the system's python3
+# Create virtual environment
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Install heavy libraries first as dedicated cached layers
+# Install heavy libraries (using cache layers)
 RUN pip install --upgrade pip
-RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-RUN pip install git+https://github.com/openai/CLIP.git
+RUN pip install torch torchvision torchaudio \
+    --index-url https://download.pytorch.org/whl/cu121 \
+    --trusted-host download.pytorch.org \
+    --trusted-host files.pythonhosted.org \
+    --trusted-host pypi.org \
+    --trusted-host download-r2.pytorch.org
+RUN pip install git+https://github.com/openai/CLIP.git \
+    --trusted-host github.com \
+    --trusted-host objects.githubusercontent.com
 
 # Install remaining Python requirements
 COPY requirements.txt .
@@ -49,29 +56,19 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/opt/venv/bin:$PATH" \
     PYTHONPATH="/app"
 
-# Install only necessary runtime system libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    ffmpeg \
-    libgl1 \
-    libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+    python3 python3-venv python3-pip python3-dev build-essential \
+    ffmpeg libgl1 libglib2.0-0 git ca-certificates && \
+    update-ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy the pre-built virtual environment from the builder stage
 COPY --from=builder /opt/venv /opt/venv
 
 WORKDIR /app
 
-# Copy application source code
 COPY src/ ./src/
 COPY main.py .
 
-# Permission Fix: Run as root for local development to ensure write access to volumes.
-# For production, we would uncomment the lines below.
-# RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
-# USER appuser
-
 EXPOSE 8000
 
-# Entrypoint: uvicorn serves the FastAPI app with 1 worker for GPU stability.
 CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
