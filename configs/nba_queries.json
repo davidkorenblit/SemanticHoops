@@ -1,0 +1,92 @@
+[
+  {
+    "tier": "tier1_static",
+    "name": "player_dunking",
+    "query": "Basketball player dunking the ball"
+  },
+  {
+    "tier": "tier1_static",
+    "name": "three_point_shot",
+    "query": "Player shooting a three-point shot"
+  },
+  {
+    "tier": "tier1_static",
+    "name": "free_throw",
+    "query": "Player shooting a free throw at the foul line"
+  },
+  {
+    "tier": "tier1_static",
+    "name": "jump_ball_tipoff",
+    "query": "Jump ball at tip-off, two players leaping"
+  },
+  {
+    "tier": "tier1_static",
+    "name": "basketball_through_net",
+    "query": "Basketball going through the net"
+  },
+  {
+    "tier": "tier1_static",
+    "name": "player_celebrating",
+    "query": "NBA player celebrating after scoring"
+  },
+  {
+    "tier": "tier2_dynamic",
+    "name": "crossover_dribble",
+    "query": "Basketball player performing a crossover dribble"
+  },
+  {
+    "tier": "tier2_dynamic",
+    "name": "defensive_steal",
+    "query": "Defender stealing the basketball"
+  },
+  {
+    "tier": "tier2_dynamic",
+    "name": "fast_break_transition",
+    "query": "NBA fast break, players sprinting in transition"
+  },
+  {
+    "tier": "tier2_dynamic",
+    "name": "driving_to_basket",
+    "query": "Player aggressively driving to the basket"
+  },
+  {
+    "tier": "tier2_dynamic",
+    "name": "alley_oop",
+    "query": "Alley-oop, player catching lob pass above the rim"
+  },
+  {
+    "tier": "tier2_dynamic",
+    "name": "player_blocking_shot",
+    "query": "Defender blocking a shot attempt"
+  },
+  {
+    "tier": "tier3_tactical",
+    "name": "setting_a_screen",
+    "query": "Basketball player setting a screen for teammate"
+  },
+  {
+    "tier": "tier3_tactical",
+    "name": "pick_and_roll",
+    "query": "Pick and roll play, screener rolling to basket"
+  },
+  {
+    "tier": "tier3_tactical",
+    "name": "zone_defense",
+    "query": "Zone defense formation, players spread across paint"
+  },
+  {
+    "tier": "tier3_tactical",
+    "name": "help_defense_rotation",
+    "query": "Help defense rotation, defender leaving his man"
+  },
+  {
+    "tier": "tier3_tactical",
+    "name": "post_player_sealing",
+    "query": "Post player sealing position in the paint"
+  },
+  {
+    "tier": "tier3_tactical",
+    "name": "inbound_play",
+    "query": "Inbound play from the sideline"
+  }
+]
